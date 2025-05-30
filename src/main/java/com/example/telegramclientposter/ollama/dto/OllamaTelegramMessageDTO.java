@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OllamaTelegramMessageDTO {
-    private long channelId;
-    private String imageId;
+    private long chatId;
+    private int fileId;
     private String text;
     private String processedText;
 }
