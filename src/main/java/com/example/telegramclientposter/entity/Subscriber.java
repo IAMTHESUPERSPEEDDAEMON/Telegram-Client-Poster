@@ -20,13 +20,13 @@ public class Subscriber {
     private Long id;
 
     @Column(name="telegram_id", unique=true)
-    private int telegramId;
+    private Long telegramId;
 
     @Column(name="username")
     private String username;
 
     @Column(name = "source")
-    private String source;
+    private Long source;
 
     @Column(name="created")
     private Date created;
