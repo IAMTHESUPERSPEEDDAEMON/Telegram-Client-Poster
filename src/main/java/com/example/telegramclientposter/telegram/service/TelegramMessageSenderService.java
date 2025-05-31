@@ -35,23 +35,30 @@ public class TelegramMessageSenderService {
                 return;
             }
 
-            TdApi.FormattedText formattedText = new TdApi.FormattedText(processedText, new TdApi.TextEntity[0]);
-            TdApi.InputMessagePhoto messagePhoto = new TdApi.InputMessagePhoto();
+            telegramClient.send(new TdApi.ParseTextEntities(processedText, new TdApi.TextParseModeMarkdown()))
+                    .whenComplete(((formattedTextResult, throwable) -> {
+                        if (throwable != null) {
+                            log.error("Error parsing text entities for chat ID {}: {}", chatId, throwable.getMessage(), throwable);
+                        }
+                        TdApi.InputMessagePhoto messagePhoto = new TdApi.InputMessagePhoto();
 
-            messagePhoto.photo = new TdApi.InputFileId(fileId);
-            messagePhoto.caption = formattedText;
+                        messagePhoto.photo = new TdApi.InputFileId(fileId);
+                        messagePhoto.caption = formattedTextResult;
 
-            TdApi.SendMessage sendMessage = new TdApi.SendMessage();
-            sendMessage.chatId = chatId;
-            sendMessage.inputMessageContent = messagePhoto;
+                        TdApi.SendMessage sendMessage = new TdApi.SendMessage();
+                        sendMessage.chatId = chatId;
+                        sendMessage.inputMessageContent = messagePhoto;
 
-            telegramClient.send(sendMessage, result -> {
-                if (result.isError()) {
-                    log.error("Error sending message to chat ID {}: {}", chatId, result.getError().message);
-                } else {
-                    log.info("Message sent to chat ID {}", chatId);
-                }
-            });
+                        telegramClient.send(sendMessage, result -> {
+                            if (result.isError()) {
+                                log.error("Error sending message to chat ID {}: {}", chatId, result.getError().message);
+                            } else {
+                                log.info("Message sent to chat ID {}", chatId);
+                            }
+                        });
+                    }));
+
+
         } catch (RuntimeException e) {
             log.error(e.getMessage(), e);
         }
