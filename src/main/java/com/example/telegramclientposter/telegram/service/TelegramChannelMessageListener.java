@@ -46,7 +46,7 @@ public class TelegramChannelMessageListener {
 
             if (messagePhoto.caption != null && messagePhoto.caption.text != null) {
                 photoCaption = messagePhoto.caption.text;
-                log.info("Photo caption" + photoCaption);
+                log.info("Photo caption RECEIVED");
             }
 
             if (messagePhoto.photo != null ) {
@@ -60,7 +60,7 @@ public class TelegramChannelMessageListener {
             }
             OllamaTelegramMessageDTO dto = ollamaTelegramMessageMapper.toOllamaTelegramMessageDTO(targetChatId, fileId, photoCaption);
             rabbitTemplate.convertAndSend(OLLAMA_EXCHANGE_NAME, OLLAMA_QUEUE_NAME, dto);
-            log.info("Sent DTO to Ollama processing queue: {}", dto);
+            log.info("Sent DTO to Ollama processing queue");
         } else {
             log.warn("Message from unmonitored channel or not a photo message. Chat ID: {} Content Type: {}",
                     message.chatId, message.content.getClass().getSimpleName());
