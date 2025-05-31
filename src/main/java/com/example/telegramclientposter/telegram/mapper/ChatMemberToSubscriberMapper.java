@@ -10,8 +10,6 @@ import java.util.Date;
 @Mapper(componentModel = "spring")
 public interface ChatMemberToSubscriberMapper {
 
-    ChatMemberToSubscriberMapper INSTANCE = Mappers.getMapper(ChatMemberToSubscriberMapper.class);
-
     @Mapping(target = "id", ignore = true)
     Subscriber subscriber(long telegramId, String username, long source, Date created);
 }
