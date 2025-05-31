@@ -1,12 +1,10 @@
 package com.example.telegramclientposter.telegram.client;
 
 import com.example.telegramclientposter.config.ApplicationProperties;
-import com.example.telegramclientposter.telegram.service.TelegramClientService;
 import it.tdlight.Init;
 import it.tdlight.Log;
 import it.tdlight.Slf4JLogMessageHandler;
 import it.tdlight.client.*;
-import it.tdlight.jni.TdApi;
 import it.tdlight.util.UnsupportedNativeLibraryException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +31,7 @@ public class TelegramClientInitializer {
     }
 
     @Bean
-    public SimpleTelegramClient telegramClient(SimpleTelegramClientFactory clientFactory, TelegramClientService telegramClientService) throws UnsupportedNativeLibraryException {
+    public SimpleTelegramClient telegramClient(SimpleTelegramClientFactory clientFactory) throws UnsupportedNativeLibraryException {
         Init.init();
         Log.setLogMessageHandler(1, new Slf4JLogMessageHandler());
 
@@ -46,8 +44,8 @@ public class TelegramClientInitializer {
 
         var clientBuilder = clientFactory.builder(settings);
 
-        // add message listener
-        clientBuilder.addUpdateHandler(TdApi.UpdateNewMessage.class, telegramClientService::onUpdate);
+//        // add message listener
+//        clientBuilder.addUpdateHandler(TdApi.UpdateNewMessage.class, telegramClientService::onUpdate);
 
         if (!sessionPath.resolve("data").toFile().exists()) {
             log.info("🔐 Session not exists — creating new one");
