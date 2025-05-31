@@ -3,6 +3,7 @@ package com.example.telegramclientposter.ollama.service;
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramMessageDTO;
 import com.example.telegramclientposter.util.PromptProvider;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
@@ -30,17 +31,17 @@ public class OllamaService {
 
     @RabbitListener(queues = OLLAMA_QUEUE_NAME)
     public void processMessageWithOllama(OllamaTelegramMessageDTO dto) {
-        log.info("OllamaService received message from queue: {}", dto);
+        log.info("OllamaService received message from queue");
 
         try {
             String originalText = dto.getText();
             String processedTextFromOllama = callToOllama(originalText);
 
             dto.setProcessedText(processedTextFromOllama);
-            log.info("OllamaService processed message. New DTO: {}", dto);
+            log.info("OllamaService done processing text from Ollama");
 
             rabbitTemplate.convertAndSend(TELEGRAM_SEND_EXCHANGE_NAME, TELEGRAM_SEND_QUEUE_NAME, dto);
-            log.info("Sent processed DTO to Telegram sending queue: {}", dto.getChatId());
+            log.info("Sent processed DTO to Telegram sending queue");
         } catch (RuntimeException e) {
             log.error("Ollama processing interrupted for DTO: {}", dto, e);
         }
@@ -53,8 +54,9 @@ public class OllamaService {
         ChatResponse response = chatModel.call(prompt);
 
         if (response != null && response.getResult() != null && response.getResult().getOutput() != null) {
-            log.info("OllamaService callToOllama() returned: {}", response);
-            return response.getResult().getOutput().toString();
+            AssistantMessage assistantMessage = (AssistantMessage) response.getResult().getOutput();
+            log.info("OllamaService callToOllama() returned: {}", assistantMessage.getText());
+            return assistantMessage.getText();
         } else {
             log.warn("Received empty or invalid response from Ollama for prompt: {}", text);
             return "Не удалось обработать запрос.";
