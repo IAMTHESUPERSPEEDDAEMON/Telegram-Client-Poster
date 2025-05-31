@@ -7,8 +7,6 @@ import org.mapstruct.factory.Mappers;
 @Mapper(componentModel = "spring")
 public interface OllamaTelegramMessageMapper {
 
-    OllamaTelegramMessageMapper INSTANCE = Mappers.getMapper(OllamaTelegramMessageMapper.class);
-
     @Mapping(target = "processedText", ignore = true)
     OllamaTelegramMessageDTO toOllamaTelegramMessageDTO(long chatId, int fileId, String text);
 }
