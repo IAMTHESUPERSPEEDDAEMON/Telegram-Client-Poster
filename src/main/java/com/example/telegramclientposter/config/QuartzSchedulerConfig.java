@@ -26,7 +26,7 @@ public class QuartzSchedulerConfig {
         return TriggerBuilder.newTrigger()
                 .forJob(telegramSubscriberUpdateJobDetail())
                 .withIdentity("telegramSubscribersUpdateJob")
-                .withSchedule(cronSchedule("0 23 * * *"))
+                .withSchedule(cronSchedule("0 0 23 * * ?"))
                 .build();
     }
 }
