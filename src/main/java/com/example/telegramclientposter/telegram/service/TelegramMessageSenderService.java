@@ -23,7 +23,7 @@ public class TelegramMessageSenderService {
 
     @RabbitListener(queues = TELEGRAM_SEND_QUEUE_NAME)
     public void sendMessageToTelegram(OllamaTelegramMessageDTO dto) {
-        log.info("Sending message: {}", dto);
+        log.info("Sending PROCESSED message to telegram");
 
         try {
             long chatId = dto.getChatId();
