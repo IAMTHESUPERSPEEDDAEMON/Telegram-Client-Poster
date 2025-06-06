@@ -4,12 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OllamaTelegramMessageDTO {
+public class OllamaTelegramPhotoMessageDto {
     private long chatId;
-    private int fileId;
-    private String text;
+    private Long mediaGroupId;
+    private List<Integer> fileIds;
+    private String caption;
     private String processedText;
 }

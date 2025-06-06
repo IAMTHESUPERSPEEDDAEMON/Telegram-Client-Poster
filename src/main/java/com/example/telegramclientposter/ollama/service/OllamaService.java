@@ -1,6 +1,6 @@
 package com.example.telegramclientposter.ollama.service;
 
-import com.example.telegramclientposter.ollama.dto.OllamaTelegramMessageDTO;
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto;
 import com.example.telegramclientposter.util.PromptProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -30,11 +30,11 @@ public class OllamaService {
     }
 
     @RabbitListener(queues = OLLAMA_QUEUE_NAME)
-    public void processMessageWithOllama(OllamaTelegramMessageDTO dto) {
+    public void processMessageWithOllama(OllamaTelegramPhotoMessageDto dto) {
         log.info("OllamaService received message from queue");
 
         try {
-            String originalText = dto.getText();
+            String originalText = dto.getCaption();
             String processedTextFromOllama = callToOllama(originalText);
 
             dto.setProcessedText(processedTextFromOllama);
