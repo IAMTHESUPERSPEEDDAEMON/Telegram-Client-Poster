@@ -11,15 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class TelegramClientService {
     private final TelegramChannelMessageListener messageListener;
-    private final TelegramSubscriberService subscriberService;
     private final SimpleTelegramClient telegramClient;
 
     @Autowired
     public TelegramClientService(TelegramChannelMessageListener messageListener,
-                                 TelegramSubscriberService subscriberService,
                                  SimpleTelegramClient telegramClient) {
         this.messageListener = messageListener;
-        this.subscriberService = subscriberService;
         this.telegramClient = telegramClient;
 
     }

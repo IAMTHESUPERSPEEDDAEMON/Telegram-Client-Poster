@@ -1,6 +1,6 @@
 package com.example.telegramclientposter.telegram.service;
 
-import com.example.telegramclientposter.ollama.dto.OllamaTelegramMessageDTO;
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto;
 import it.tdlight.client.SimpleTelegramClient;
 import it.tdlight.jni.TdApi;
 import lombok.extern.slf4j.Slf4j;
@@ -22,12 +22,12 @@ public class TelegramMessageSenderService {
     }
 
     @RabbitListener(queues = TELEGRAM_SEND_QUEUE_NAME)
-    public void sendMessageToTelegram(OllamaTelegramMessageDTO dto) {
+    public void sendMessageToTelegram(OllamaTelegramPhotoMessageDto dto) {
         log.info("Sending PROCESSED message to telegram");
 
         try {
             long chatId = dto.getChatId();
-            int fileId = dto.getFileId();
+            int fileId = dto.getFileIds().getFirst();
             String processedText = dto.getProcessedText();
 
             if (processedText == null || processedText.trim().isEmpty()) {
