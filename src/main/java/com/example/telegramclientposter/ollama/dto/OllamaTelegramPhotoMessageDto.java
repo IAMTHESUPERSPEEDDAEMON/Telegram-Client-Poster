@@ -1,19 +1,20 @@
 package com.example.telegramclientposter.ollama.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.*;
 
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-public class OllamaTelegramPhotoMessageDto {
-    private long chatId;
-    private Long albumId;
+@EqualsAndHashCode(callSuper = true) // Важно: генерировать equals/hashCode с учетом полей родителя
+@ToString(callSuper = true)
+public class OllamaTelegramPhotoMessageDto extends BaseTelegramMessageDto {
+    private long albumId;
     private List<Integer> fileIds;
     private String caption;
-    private String processedText;
+
+    @Override
+    public String getTextForOllama() {
+        return this.caption;
+    }
 }

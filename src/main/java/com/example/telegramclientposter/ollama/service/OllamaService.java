@@ -1,6 +1,8 @@
 package com.example.telegramclientposter.ollama.service;
 
+import com.example.telegramclientposter.ollama.dto.BaseTelegramMessageDto;
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto;
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
 import com.example.telegramclientposter.util.PromptProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -30,31 +32,37 @@ public class OllamaService {
     }
 
     @RabbitListener(queues = OLLAMA_QUEUE_NAME)
-    public void processMessageWithOllama(OllamaTelegramPhotoMessageDto dto) {
+    public void processMessageWithOllama(BaseTelegramMessageDto dto) {
         log.info("OllamaService received message from queue");
 
+        boolean shouldSend = false;
+
         try {
-            String originalText = dto.getCaption();
+            String originalText = dto.getTextForOllama();
             String processedTextFromOllama = callToOllama(originalText);
 
             dto.setProcessedText(processedTextFromOllama);
-            log.info("OllamaService done processing text from Ollama");
-
-            rabbitTemplate.convertAndSend(TELEGRAM_SEND_EXCHANGE_NAME, TELEGRAM_SEND_QUEUE_NAME, dto);
-            log.info("Sent processed DTO to Telegram sending queue");
+            log.info("OllamaService done processing caption from Ollama");
+            shouldSend = true;
         } catch (RuntimeException e) {
             log.error("Ollama processing interrupted for DTO: {}", dto, e);
+        }
+
+        if (shouldSend) {
+            rabbitTemplate.convertAndSend(TELEGRAM_SEND_EXCHANGE_NAME, TELEGRAM_SEND_QUEUE_NAME, dto);
+            log.info("Sent processed DTO of type {} to Telegram sending queue.", dto.getClass().getSimpleName());
+        } else {
+            log.warn("Skipped sending DTO to Telegram queue due to error or unsupported type for DTO: {}", dto);
         }
     }
 
     private String callToOllama(String text) {
 
         Prompt prompt = new Prompt(promptProvider.getFullPrompt(text));
-
         ChatResponse response = chatModel.call(prompt);
 
         if (response != null && response.getResult() != null && response.getResult().getOutput() != null) {
-            AssistantMessage assistantMessage = (AssistantMessage) response.getResult().getOutput();
+            AssistantMessage assistantMessage = response.getResult().getOutput();
             log.info("OllamaService callToOllama() returned: {}", assistantMessage.getText());
             return assistantMessage.getText();
         } else {

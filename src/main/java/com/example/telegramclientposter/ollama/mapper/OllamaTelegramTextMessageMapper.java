@@ -1,5 +1,6 @@
-package com.example.telegramclientposter.ollama.dto;
+package com.example.telegramclientposter.ollama.mapper;
 
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
