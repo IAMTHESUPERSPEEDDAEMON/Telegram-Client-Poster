@@ -1,6 +1,8 @@
 package com.example.telegramclientposter.telegram.service;
 
+import com.example.telegramclientposter.ollama.dto.BaseTelegramMessageDto;
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto;
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
 import it.tdlight.client.SimpleTelegramClient;
 import it.tdlight.jni.TdApi;
 import lombok.extern.slf4j.Slf4j;
@@ -22,46 +24,62 @@ public class TelegramMessageSenderService {
     }
 
     @RabbitListener(queues = TELEGRAM_SEND_QUEUE_NAME)
-    public void sendMessageToTelegram(OllamaTelegramPhotoMessageDto dto) {
-        log.info("Sending PROCESSED message to telegram");
+    public void sendMessageToTelegram(BaseTelegramMessageDto dto) {
+        log.info("Try send PROCESSED message to telegram");
 
-        try {
-            long chatId = dto.getChatId();
-            int fileId = dto.getFileIds().get(0);
-            String processedText = dto.getProcessedText();
+        String processedText = dto.getProcessedText();
+        long chatId = dto.getChatId();
 
-            if (processedText == null || processedText.trim().isEmpty()) {
-                log.warn("Processed text is empty for DTO: {}. Skipping message sending.", dto);
-                return;
-            }
-
-            telegramClient.send(new TdApi.ParseTextEntities(processedText, new TdApi.TextParseModeMarkdown()))
-                    .whenComplete(((formattedTextResult, throwable) -> {
-                        if (throwable != null) {
-                            log.error("Error parsing text entities for chat ID {}: {}", chatId, throwable.getMessage(), throwable);
-                        }
-                        TdApi.InputMessagePhoto messagePhoto = new TdApi.InputMessagePhoto();
-
-                        messagePhoto.photo = new TdApi.InputFileId(fileId);
-                        messagePhoto.caption = formattedTextResult;
-
-                        TdApi.SendMessage sendMessage = new TdApi.SendMessage();
-                        sendMessage.chatId = chatId;
-                        sendMessage.inputMessageContent = messagePhoto;
-
-                        telegramClient.send(sendMessage, result -> {
-                            if (result.isError()) {
-                                log.error("Error sending message to chat ID {}: {}", chatId, result.getError().message);
-                            } else {
-                                log.info("Message sent to chat ID {}", chatId);
-                            }
-                        });
-                    }));
-
-
-        } catch (RuntimeException e) {
-            log.error(e.getMessage(), e);
+        if (processedText == null || processedText.trim().isEmpty()) {
+            log.warn("Processed text is empty for DTO: {}. Skipping message sending.", dto);
+            return;
         }
+
+        telegramClient.send(new TdApi.ParseTextEntities(processedText, new TdApi.TextParseModeMarkdown()))
+                .whenComplete((formattedTextResult, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Error parsing text entities for chat ID {}: {}", chatId, throwable.getMessage(), throwable);
+                        return; // Важно выйти, если парсинг не удался
+                    }
+                    sendAppropriateTelegramMessage(dto, formattedTextResult, chatId);
+                });
     }
 
+    private void sendAppropriateTelegramMessage(BaseTelegramMessageDto dto, TdApi.FormattedText formattedText, long chatId) {
+        TdApi.InputMessageContent messageContent = null;
+
+        if (dto instanceof OllamaTelegramPhotoMessageDto photoMessageDto) {
+            // Убедимся, что список fileIds не пустой
+            if (photoMessageDto.getFileIds() != null && !photoMessageDto.getFileIds().isEmpty()) {
+                int fileId = photoMessageDto.getFileIds().get(0);
+                TdApi.InputMessagePhoto messagePhoto = new TdApi.InputMessagePhoto();
+                messagePhoto.photo = new TdApi.InputFileId(fileId);
+                messagePhoto.caption = formattedText;
+                messageContent = messagePhoto;
+            } else {
+                log.warn("No file IDs found for photo message DTO: {}. Sending as text message.", dto);
+                // Если нет фото, можно отправить просто текст
+                messageContent = new TdApi.InputMessageText(formattedText, null, true);
+            }
+        } else if (dto instanceof OllamaTelegramTextMessageDto) {
+            TdApi.InputMessageText messageText = new TdApi.InputMessageText();
+            messageText.text = formattedText;
+            messageContent = messageText;
+        } else {
+            log.warn("Unsupported message DTO type: {}. Cannot send message to Telegram.", dto.getClass().getSimpleName());
+            return; // Выходим, если тип DTO не поддерживается
+        }
+
+        TdApi.SendMessage sendMessage = new TdApi.SendMessage();
+        sendMessage.chatId = chatId;
+        sendMessage.inputMessageContent = messageContent;
+
+        telegramClient.send(sendMessage, result -> {
+            if (result.isError()) {
+                log.error("Error sending message to chat ID {}: {}", chatId, result.getError().message);
+            } else {
+                log.info("Message sent successfully to chat ID {}", chatId);
+            }
+        });
+    }
 }

@@ -47,7 +47,6 @@ public class TelegramChannelMessageListener {
     }
 
     public void processMessage(TdApi.UpdateNewMessage update) {
-        log.info("Received Update New Message: \n {}",  update);
         TdApi.Message message = update.message;
 
         if (isMonitoredChannel(message.chatId)) {
@@ -76,7 +75,7 @@ public class TelegramChannelMessageListener {
         List<Integer> fileIds = new ArrayList<>();
         long albumId = 0L;
 
-        if (messagePhoto.caption.text != null && messagePhoto.photo != null) {
+        if (!messagePhoto.caption.text.trim().isEmpty() && messagePhoto.photo != null) {
             String photoCaption = messagePhoto.caption.text;
             log.info("Photo caption RECEIVED");
             TdApi.PhotoSize largestPhotoSize = Arrays.stream(messagePhoto.photo.sizes)

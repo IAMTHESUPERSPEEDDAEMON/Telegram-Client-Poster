@@ -17,10 +17,14 @@ import static com.example.telegramclientposter.constanta.Constants.*;
 @Configuration
 public class RabbitMQConfig {
 
+
     // Define the JSON MessageConverter as a Spring Bean
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
+        // Отключаем создание messageId заголовков
+        converter.setCreateMessageIds(false);
+        return converter;
     }
 
     // Override the default RabbitTemplate to use our JSON converter
