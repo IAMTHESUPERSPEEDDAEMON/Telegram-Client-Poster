@@ -70,8 +70,8 @@ public class TelegramChannelMessageListener {
         }
     }
 
+        // TODO Доделать работу с альбомами
     private OllamaTelegramPhotoMessageDto processPhotoMessage(TdApi.MessagePhoto messagePhoto) {
-
         List<Integer> fileIds = new ArrayList<>();
         long albumId = 0L;
 
