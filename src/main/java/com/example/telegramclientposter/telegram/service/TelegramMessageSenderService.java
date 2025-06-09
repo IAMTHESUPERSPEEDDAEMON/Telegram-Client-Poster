@@ -27,7 +27,7 @@ public class TelegramMessageSenderService {
 
         try {
             long chatId = dto.getChatId();
-            int fileId = dto.getFileIds().getFirst();
+            int fileId = dto.getFileIds().get(0);
             String processedText = dto.getProcessedText();
 
             if (processedText == null || processedText.trim().isEmpty()) {

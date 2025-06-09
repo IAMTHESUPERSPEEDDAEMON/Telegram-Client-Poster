@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>Telegram-Client-Poster</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>Telegram-Client-Poster</name>
     <description>Telegram-Client-Poster</description>
     <url/>

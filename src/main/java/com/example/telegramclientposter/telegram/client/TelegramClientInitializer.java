@@ -44,9 +44,6 @@ public class TelegramClientInitializer {
 
         var clientBuilder = clientFactory.builder(settings);
 
-//        // add message listener
-//        clientBuilder.addUpdateHandler(TdApi.UpdateNewMessage.class, telegramClientService::onUpdate);
-
         if (!sessionPath.resolve("data").toFile().exists()) {
             log.info("🔐 Session not exists — creating new one");
             return clientBuilder.build(AuthenticationSupplier.consoleLogin());
