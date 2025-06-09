@@ -44,32 +44,41 @@ public class TelegramChannelMessageListener {
         TdApi.Message message = update.message;
 
         if (isMonitoredChannel(message.chatId)) {
-            String photoCaption = "";
-            List<Integer> fileIds = new ArrayList<>();
             // Check message to be a photo message
-             if (message.content instanceof TdApi.MessagePhoto messagePhoto) {
-                 if (messagePhoto.caption != null && messagePhoto.caption.text != null & messagePhoto.photo != null) {
-                     photoCaption = messagePhoto.caption.text;
-                     log.info("Photo caption RECEIVED");
-                     TdApi.PhotoSize largestPhotoSize = Arrays.stream(messagePhoto.photo.sizes)
-                             .max(Comparator.comparingInt(photoSize -> photoSize.width * photoSize.height))
-                             .orElse(null);
-
-                     if (largestPhotoSize != null && largestPhotoSize.photo != null) {
-                         fileIds.add(largestPhotoSize.photo.id);
-                     }
-                 }
-
-                OllamaTelegramPhotoMessageDto dto = ollamaTelegramPhotoMessageMapper.toOllamaTelegramPhotoMessageDTO(targetChatId, fileIds, photoCaption);
-                rabbitTemplate.convertAndSend(OLLAMA_EXCHANGE_NAME, OLLAMA_QUEUE_NAME, dto);
+            if (message.content instanceof TdApi.MessagePhoto messagePhoto) {
+                log.info("PhotoMessage received");
+                processPhotoMessage(messagePhoto);
             } else if (message.content instanceof TdApi.MessageText messageText) {
                 log.info("TextMessage Received");
-
-             }
+                processTextMessage(messageText);
+            }
             log.info("Sent DTO to Ollama processing queue");
         } else {
             log.warn("Message from unmonitored channel or not a photo message. Chat ID: {} Content Type: {}",
                     message.chatId, message.content.getClass().getSimpleName());
         }
+    }
+
+    private void processPhotoMessage(TdApi.MessagePhoto messagePhoto) {
+        String photoCaption = "";
+        List<Integer> fileIds = new ArrayList<>();
+        if (messagePhoto.caption.text != null & messagePhoto.photo != null) {
+            photoCaption = messagePhoto.caption.text;
+            log.info("Photo caption RECEIVED");
+            TdApi.PhotoSize largestPhotoSize = Arrays.stream(messagePhoto.photo.sizes)
+                    .max(Comparator.comparingInt(photoSize -> photoSize.width * photoSize.height))
+                    .orElse(null);
+
+            if (largestPhotoSize != null && largestPhotoSize.photo != null) {
+                fileIds.add(largestPhotoSize.photo.id);
+            }
+        }
+
+        OllamaTelegramPhotoMessageDto dto = ollamaTelegramPhotoMessageMapper.toOllamaTelegramPhotoMessageDTO(targetChatId, fileIds, photoCaption);
+        rabbitTemplate.convertAndSend(OLLAMA_EXCHANGE_NAME, OLLAMA_QUEUE_NAME, dto);
+    }
+
+    private void processTextMessage(TdApi.MessageText messageText) {
+
     }
 }
