@@ -2,6 +2,8 @@ package com.example.telegramclientposter.telegram.service;
 
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageMapper;
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto;
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageMapper;
 import com.example.telegramclientposter.telegram.config.ChannelConfigLoader;
 import it.tdlight.jni.TdApi;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ public class TelegramChannelMessageListener {
     private final ChannelConfigLoader channelConfig;
     private final OllamaTelegramPhotoMessageMapper ollamaTelegramPhotoMessageMapper;
     private final RabbitTemplate rabbitTemplate;
+    private final OllamaTelegramTextMessageMapper ollamaTelegramTextMessageMapper;
 
     @Value("${tg.my-channel-id}")
     private long targetChatId;
@@ -30,9 +33,11 @@ public class TelegramChannelMessageListener {
     @Autowired
     public TelegramChannelMessageListener(ChannelConfigLoader channelConfig,
                                           OllamaTelegramPhotoMessageMapper ollamaTelegramPhotoMessageMapper,
+                                          OllamaTelegramTextMessageMapper ollamaTelegramTextMessageMapper,
                                           RabbitTemplate rabbitTemplate) {
         this.channelConfig = channelConfig;
         this.ollamaTelegramPhotoMessageMapper = ollamaTelegramPhotoMessageMapper;
+        this.ollamaTelegramTextMessageMapper = ollamaTelegramTextMessageMapper;
         this.rabbitTemplate = rabbitTemplate;
     }
 
@@ -44,13 +49,18 @@ public class TelegramChannelMessageListener {
         TdApi.Message message = update.message;
 
         if (isMonitoredChannel(message.chatId)) {
+            Object dtoToSend = null;
             // Check message to be a photo message
             if (message.content instanceof TdApi.MessagePhoto messagePhoto) {
                 log.info("PhotoMessage received");
-                processPhotoMessage(messagePhoto);
+                dtoToSend = processPhotoMessage(messagePhoto);
             } else if (message.content instanceof TdApi.MessageText messageText) {
                 log.info("TextMessage Received");
-                processTextMessage(messageText);
+                dtoToSend = processTextMessage(messageText);
+            }
+
+            if (dtoToSend != null) {
+                rabbitTemplate.convertAndSend(OLLAMA_EXCHANGE_NAME, OLLAMA_QUEUE_NAME, dtoToSend);
             }
             log.info("Sent DTO to Ollama processing queue");
         } else {
@@ -59,9 +69,10 @@ public class TelegramChannelMessageListener {
         }
     }
 
-    private void processPhotoMessage(TdApi.MessagePhoto messagePhoto) {
-        String photoCaption = "";
+    private OllamaTelegramPhotoMessageDto processPhotoMessage(TdApi.MessagePhoto messagePhoto) {
+        String photoCaption = null;
         List<Integer> fileIds = new ArrayList<>();
+
         if (messagePhoto.caption.text != null & messagePhoto.photo != null) {
             photoCaption = messagePhoto.caption.text;
             log.info("Photo caption RECEIVED");
@@ -74,11 +85,15 @@ public class TelegramChannelMessageListener {
             }
         }
 
-        OllamaTelegramPhotoMessageDto dto = ollamaTelegramPhotoMessageMapper.toOllamaTelegramPhotoMessageDTO(targetChatId, fileIds, photoCaption);
-        rabbitTemplate.convertAndSend(OLLAMA_EXCHANGE_NAME, OLLAMA_QUEUE_NAME, dto);
+        return ollamaTelegramPhotoMessageMapper.toOllamaTelegramPhotoMessageDTO(targetChatId, fileIds, photoCaption);
     }
 
-    private void processTextMessage(TdApi.MessageText messageText) {
+    private OllamaTelegramTextMessageDto processTextMessage(TdApi.MessageText messageText) {
 
+        if (messageText.text != null) {
+            String originalText = messageText.text.text;
+            return ollamaTelegramTextMessageMapper.toOllamaTelegramMessageDto(targetChatId, originalText);
+        } else
+            return null;
     }
 }
