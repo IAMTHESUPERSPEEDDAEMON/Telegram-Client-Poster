@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class OllamaTelegramPhotoMessageDto {
     private long chatId;
-    private Long mediaGroupId;
+    private Long albumId;
     private List<Integer> fileIds;
     private String caption;
     private String processedText;
