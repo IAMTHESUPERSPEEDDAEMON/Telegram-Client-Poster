@@ -29,12 +29,7 @@ public class TelegramClientService {
     }
 
     public void onUpdate(TdApi.UpdateNewMessage update) {
-        TdApi.Message message = update.message;
         messageListener.processMessage(update);
-        // Определяем тип чата и делегируем обработку
-//        if (message.isChannelPost) {
-//            messageListener.processMessage(update);
-//        }
     }
 
 }
