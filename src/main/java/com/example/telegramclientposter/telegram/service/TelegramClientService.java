@@ -11,15 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class TelegramClientService {
     private final TelegramChannelMessageListener messageListener;
-    private final TelegramSubscriberService subscriberService;
     private final SimpleTelegramClient telegramClient;
 
     @Autowired
     public TelegramClientService(TelegramChannelMessageListener messageListener,
-                                 TelegramSubscriberService subscriberService,
                                  SimpleTelegramClient telegramClient) {
         this.messageListener = messageListener;
-        this.subscriberService = subscriberService;
         this.telegramClient = telegramClient;
 
     }
@@ -32,12 +29,7 @@ public class TelegramClientService {
     }
 
     public void onUpdate(TdApi.UpdateNewMessage update) {
-        TdApi.Message message = update.message;
-
-        // Определяем тип чата и делегируем обработку
-        if (message.isChannelPost) {
-            messageListener.processMessage(update);
-        }
+        messageListener.processMessage(update);
     }
 
 }
