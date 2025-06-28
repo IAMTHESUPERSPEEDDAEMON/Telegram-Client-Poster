@@ -1,9 +1,7 @@
 package com.example.telegramclientposter.ollama.service;
 
 import com.example.telegramclientposter.ollama.dto.BaseTelegramMessageDto;
-import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto;
-import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
-import com.example.telegramclientposter.util.PromptProvider;
+import com.example.telegramclientposter.util.PromptProviderMain;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -18,20 +16,20 @@ import static com.example.telegramclientposter.constanta.Constants.*;
 
 @Slf4j
 @Service
-public class OllamaService {
+public class OllamaMainService {
 
     private final RabbitTemplate rabbitTemplate;
     private final OllamaChatModel chatModel;
-    private final PromptProvider promptProvider;
+    private final PromptProviderMain promptProvider;
 
     @Autowired
-    public OllamaService(RabbitTemplate rabbitTemplate, OllamaChatModel chatModel, PromptProvider promptProvider) {
+    public OllamaMainService(RabbitTemplate rabbitTemplate, OllamaChatModel chatModel, PromptProviderMain promptProvider) {
         this.rabbitTemplate = rabbitTemplate;
         this.chatModel = chatModel;
         this.promptProvider = promptProvider;
     }
 
-    @RabbitListener(queues = OLLAMA_QUEUE_NAME)
+    @RabbitListener(queues = OLLAMA_VALID_QUEUE_NAME)
     public void processMessageWithOllama(BaseTelegramMessageDto dto) {
         log.info("OllamaService received message from queue");
 
