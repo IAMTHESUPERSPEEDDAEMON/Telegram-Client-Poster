@@ -1,5 +1,6 @@
 package com.example.telegramclientposter.ollama.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,9 @@ import lombok.NoArgsConstructor;
 public abstract class BaseTelegramMessageDto {
     protected long chatId;
     protected String processedText;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected String cleanedTextForEmbedding;
 
     public abstract String getTextForOllama();
 }
