@@ -35,7 +35,23 @@ public class RabbitMQConfig {
         return rabbitTemplate;
     }
 
-    // 1. queue for Ollama
+    // 1) queue for embedding checker
+    @Bean
+    public Queue ollamaEmbeddingQueue() {
+        return new Queue(OLLAMA_EMBEDDING_QUEUE_NAME, true);
+    }
+
+    @Bean
+    public DirectExchange ollamaEmbeddingExchange() {
+        return new DirectExchange(OLLAMA_EMBEDDING_EXCHANGE_NAME);
+    }
+
+    @Bean
+    public Binding ollamaEmbeddingBinding(Queue ollamaEmbeddingQueue, DirectExchange ollamaEmbeddingExchange) {
+        return BindingBuilder.bind(ollamaEmbeddingQueue).to(ollamaEmbeddingExchange).with(OLLAMA_EMBEDDING_QUEUE_NAME);
+    }
+
+    // 2) queue for ollama processing
     @Bean
     public Queue ollamaQueue() {
         return new Queue(OLLAMA_VALID_QUEUE_NAME, true);
@@ -51,7 +67,7 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(ollamaQueue).to(ollamaExchange).with(OLLAMA_VALID_QUEUE_NAME);
     }
 
-    // 2. Очередь для отправки в Telegram
+    // 3) queue for telegram send message
     @Bean
     public Queue telegramSendQueue() {
         return new Queue(TELEGRAM_SEND_QUEUE_NAME, true);

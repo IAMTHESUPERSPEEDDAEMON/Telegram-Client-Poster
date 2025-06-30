@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true) // Важно: генерировать equals/hashCode с учетом полей родителя
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class OllamaTelegramPhotoMessageDto extends BaseTelegramMessageDto {
     private long albumId;

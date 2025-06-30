@@ -7,6 +7,7 @@ import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
 import com.example.telegramclientposter.ollama.mapper.OllamaTelegramTextMessageMapper;
 import com.example.telegramclientposter.telegram.config.ChannelConfigLoader;
 import com.example.telegramclientposter.util.AdValidator;
+import com.example.telegramclientposter.util.TextCleanerForEmbeddings;
 import it.tdlight.jni.TdApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -68,8 +69,11 @@ public class TelegramChannelMessageListener {
             }
 
             if (dtoToSend != null) {
-                rabbitTemplate.convertAndSend(OLLAMA_VALID_EXCHANGE_NAME, OLLAMA_VALID_QUEUE_NAME, dtoToSend);
-                log.info("Sent DTO to Ollama processing queue");
+                String textToClean = dtoToSend.getTextForOllama();
+                dtoToSend.setCleanedTextForEmbedding(TextCleanerForEmbeddings.cleanTextForEmbedding(textToClean));
+
+                rabbitTemplate.convertAndSend(OLLAMA_EMBEDDING_EXCHANGE_NAME, OLLAMA_EMBEDDING_QUEUE_NAME, dtoToSend);
+                log.info("Sent DTO to Ollama-Embedding processing queue");
             }
         } else {
             log.warn("Message from unmonitored channel. Chat ID: {} Content Type: {}",
