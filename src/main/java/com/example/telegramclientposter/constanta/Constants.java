@@ -1,7 +1,7 @@
 package com.example.telegramclientposter.constanta;
 
 public class Constants {
-    // Название очереди, куда DuplicateCheckerService будет отправлять сообщения для Ollama
+    // Название очереди, куда OllamaEmbeddingDuplicateCheckerService будет отправлять сообщения для Ollama
     public static final String OLLAMA_VALID_QUEUE_NAME = "ollama-processing-queue";
     public static final String OLLAMA_VALID_EXCHANGE_NAME = "ollama-processing-exchange";
 
@@ -9,7 +9,7 @@ public class Constants {
     public static final String TELEGRAM_SEND_QUEUE_NAME = "telegram-send-queue";
     public static final String TELEGRAM_SEND_EXCHANGE_NAME = "telegram-send-exchange";
 
-    // название очереди, куда ChannelMessageListener будет слать для проверки на дубли DuplicateCheckerService
+    // название очереди, куда ChannelMessageListener будет слать для проверки на дубли OllamaEmbeddingDuplicateCheckerService
     public static final String OLLAMA_EMBEDDING_QUEUE_NAME = "ollama-embedding-queue";
     public static final String OLLAMA_EMBEDDING_EXCHANGE_NAME = "ollama-embedding-exchange";
 
