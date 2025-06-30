@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 @Component // Маркируем как общий компонент Spring
 @Slf4j
 @Getter // Lombok для автоматической генерации геттеров
-public class PromptProvider {
+public class PromptProviderMain {
 
     private final ResourceLoader resourceLoader;
 
@@ -39,7 +39,7 @@ public class PromptProvider {
     }
 
     @Autowired
-    public PromptProvider(ResourceLoader resourceLoader) {
+    public PromptProviderMain(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 

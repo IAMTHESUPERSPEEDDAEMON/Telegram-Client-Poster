@@ -4,7 +4,6 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter; // Import Jackson2JsonMessageConverter
@@ -36,23 +35,39 @@ public class RabbitMQConfig {
         return rabbitTemplate;
     }
 
-    // 1. Очередь для Ollama
+    // 1) queue for embedding checker
+    @Bean
+    public Queue ollamaEmbeddingQueue() {
+        return new Queue(OLLAMA_EMBEDDING_QUEUE_NAME, true);
+    }
+
+    @Bean
+    public DirectExchange ollamaEmbeddingExchange() {
+        return new DirectExchange(OLLAMA_EMBEDDING_EXCHANGE_NAME);
+    }
+
+    @Bean
+    public Binding ollamaEmbeddingBinding(Queue ollamaEmbeddingQueue, DirectExchange ollamaEmbeddingExchange) {
+        return BindingBuilder.bind(ollamaEmbeddingQueue).to(ollamaEmbeddingExchange).with(OLLAMA_EMBEDDING_QUEUE_NAME);
+    }
+
+    // 2) queue for ollama processing
     @Bean
     public Queue ollamaQueue() {
-        return new Queue(OLLAMA_QUEUE_NAME, true); // true = durable (сохраняется при перезапуске брокера)
+        return new Queue(OLLAMA_VALID_QUEUE_NAME, true);
     }
 
     @Bean
     public DirectExchange ollamaExchange() {
-        return new DirectExchange(OLLAMA_EXCHANGE_NAME);
+        return new DirectExchange(OLLAMA_VALID_EXCHANGE_NAME);
     }
 
     @Bean
     public Binding ollamaBinding(Queue ollamaQueue, DirectExchange ollamaExchange) {
-        return BindingBuilder.bind(ollamaQueue).to(ollamaExchange).with(OLLAMA_QUEUE_NAME);
+        return BindingBuilder.bind(ollamaQueue).to(ollamaExchange).with(OLLAMA_VALID_QUEUE_NAME);
     }
 
-    // 2. Очередь для отправки в Telegram
+    // 3) queue for telegram send message
     @Bean
     public Queue telegramSendQueue() {
         return new Queue(TELEGRAM_SEND_QUEUE_NAME, true);

@@ -6,6 +6,8 @@ import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
 import com.example.telegramclientposter.ollama.mapper.OllamaTelegramTextMessageMapper;
 import com.example.telegramclientposter.telegram.config.ChannelConfigLoader;
+import com.example.telegramclientposter.util.AdValidator;
+import com.example.telegramclientposter.util.TextCleanerForEmbeddings;
 import it.tdlight.jni.TdApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -50,6 +52,12 @@ public class TelegramChannelMessageListener {
         TdApi.Message message = update.message;
 
         if (isMonitoredChannel(message.chatId)) {
+
+            if (AdValidator.checkWithRegex(message)) {
+                log.info("Message from channel {} identified as AD by RegEx. Skipping processing. Message ID: {}",
+                        message.chatId, message.id);
+                return;
+            }
             BaseTelegramMessageDto dtoToSend = null;
             // Check message to be a photo message
             if (message.content instanceof TdApi.MessagePhoto messagePhoto) {
@@ -61,8 +69,11 @@ public class TelegramChannelMessageListener {
             }
 
             if (dtoToSend != null) {
-                rabbitTemplate.convertAndSend(OLLAMA_EXCHANGE_NAME, OLLAMA_QUEUE_NAME, dtoToSend);
-                log.info("Sent DTO to Ollama processing queue");
+                String textToClean = dtoToSend.getTextForOllama();
+                dtoToSend.setCleanedTextForEmbedding(TextCleanerForEmbeddings.cleanTextForEmbedding(textToClean));
+
+                rabbitTemplate.convertAndSend(OLLAMA_EMBEDDING_EXCHANGE_NAME, OLLAMA_EMBEDDING_QUEUE_NAME, dtoToSend);
+                log.info("Sent DTO to Ollama-Embedding processing queue");
             }
         } else {
             log.warn("Message from unmonitored channel. Chat ID: {} Content Type: {}",
