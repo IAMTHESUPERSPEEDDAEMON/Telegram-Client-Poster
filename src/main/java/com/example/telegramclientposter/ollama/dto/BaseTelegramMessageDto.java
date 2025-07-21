@@ -16,7 +16,8 @@ import lombok.NoArgsConstructor;
 // @JsonSubTypes указывает, какие подтипы существуют для этого базового класса
 @com.fasterxml.jackson.annotation.JsonSubTypes({
         @com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = OllamaTelegramPhotoMessageDto.class, name = "PhotoMessage"),
-        @com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = OllamaTelegramTextMessageDto.class, name = "TextMessage")
+        @com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = OllamaTelegramTextMessageDto.class, name = "TextMessage"),
+        @com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = OllamaTelegramVideoMessageDto.class, name = "VideoMessage")
 })
 public abstract class BaseTelegramMessageDto {
     protected long chatId;

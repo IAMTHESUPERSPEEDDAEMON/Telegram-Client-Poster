@@ -2,7 +2,7 @@ package com.example.telegramclientposter.util;
 
 import java.util.regex.Pattern;
 
-public class TextCleanerForEmbeddings {
+public final class TextCleanerForEmbeddings {
 
     private TextCleanerForEmbeddings() {}
 
