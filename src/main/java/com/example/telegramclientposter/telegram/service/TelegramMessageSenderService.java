@@ -3,6 +3,7 @@ package com.example.telegramclientposter.telegram.service;
 import com.example.telegramclientposter.ollama.dto.BaseTelegramMessageDto;
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramPhotoMessageDto;
 import com.example.telegramclientposter.ollama.dto.OllamaTelegramTextMessageDto;
+import com.example.telegramclientposter.ollama.dto.OllamaTelegramVideoMessageDto;
 import it.tdlight.client.SimpleTelegramClient;
 import it.tdlight.jni.TdApi;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +66,18 @@ public class TelegramMessageSenderService {
             TdApi.InputMessageText messageText = new TdApi.InputMessageText();
             messageText.text = formattedText;
             messageContent = messageText;
+        } else if (dto instanceof OllamaTelegramVideoMessageDto videoMessageDto) {
+            // убеждаемся что есть файл ИД
+            if (videoMessageDto.getFileIds() != null && !videoMessageDto.getFileIds().isEmpty()) {
+                int fileId = videoMessageDto.getFileIds().get(0);
+                TdApi.InputMessageVideo messageVideo = new TdApi.InputMessageVideo();
+                messageVideo.video = new TdApi.InputFileId();
+                messageVideo.caption = formattedText;
+                messageContent = messageVideo;
+            } else {
+                log.warn("No file IDs found for video message DTO: {}. Sending as text", dto);
+                messageContent = new TdApi.InputMessageText(formattedText, null, true);
+            }
         } else {
             log.warn("Unsupported message DTO type: {}. Cannot send message to Telegram.", dto.getClass().getSimpleName());
             return; // Выходим, если тип DTO не поддерживается

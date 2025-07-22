@@ -64,7 +64,7 @@ public class TelegramChannelMessageListener {
                 return;
             }
             BaseTelegramMessageDto dtoToSend = null;
-            // Check message to be a photo message
+
             if (message.content instanceof TdApi.MessagePhoto messagePhoto) {
                 log.info("PhotoMessage received");
                 dtoToSend = processPhotoMessage(messagePhoto);
