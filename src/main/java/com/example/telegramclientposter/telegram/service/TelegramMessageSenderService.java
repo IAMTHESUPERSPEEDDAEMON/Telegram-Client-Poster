@@ -71,7 +71,7 @@ public class TelegramMessageSenderService {
             if (videoMessageDto.getFileIds() != null && !videoMessageDto.getFileIds().isEmpty()) {
                 int fileId = videoMessageDto.getFileIds().get(0);
                 TdApi.InputMessageVideo messageVideo = new TdApi.InputMessageVideo();
-                messageVideo.video = new TdApi.InputFileId();
+                messageVideo.video = new TdApi.InputFileId(fileId);
                 messageVideo.caption = formattedText;
                 messageContent = messageVideo;
             } else {
